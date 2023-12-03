@@ -1,7 +1,6 @@
 import cv2
 import sys
 
-
 def shapeDetector(filename):
     # lecture de l'image
     img = cv2.imread(filename)
@@ -10,20 +9,15 @@ def shapeDetector(filename):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # application d'un seuillage d'image
-    _, threshold = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+    _, threshold = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    blurred = cv2.GaussianBlur(threshold, (3, 3), 0)
 
     # utilisation de la fonction findContours()
-    contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    first_match = True
+    contours, _ = cv2.findContours(blurred, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     # itération sur la liste des formes trouvées
     for contour in contours:
-
-        # la premiere forme est ignorée (c'est l'image elle-même)
-        if first_match:
-            first_match = False
-            continue
 
         # approximation de la forme
         approx = cv2.approxPolyDP(contour, 0.01 * cv2.arcLength(contour, True), True)
@@ -42,7 +36,10 @@ def shapeDetector(filename):
             cv2.putText(img, 'Triangle', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         elif len(approx) == 4:
-            cv2.putText(img, 'Quadrilatère', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            (x, y, w, h) = cv2.boundingRect(approx)
+            ar = w / float(h)
+            shape = 'Carre' if ar >= 0.95 and ar <= 1.05 else "Rectangle"
+            cv2.putText(img, shape, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         elif len(approx) == 5:
             cv2.putText(img, 'Pentagone', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
@@ -57,10 +54,10 @@ def shapeDetector(filename):
             cv2.putText(img, 'Octogone', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         elif len(approx) == 9:
-            cv2.putText(img, 'Ennéagone', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            cv2.putText(img, 'Enneagone', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         elif len(approx) == 10:
-            cv2.putText(img, 'Décagone', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            cv2.putText(img, 'Decagone', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         else:
             cv2.putText(img, 'Cercle', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
