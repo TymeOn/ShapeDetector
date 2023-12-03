@@ -11,6 +11,7 @@ def shapeDetector(filename):
     # application d'un seuillage d'image
     _, threshold = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
+    # application d'un flou gaussien
     blurred = cv2.GaussianBlur(threshold, (3, 3), 0)
 
     # utilisation de la fonction findContours()
